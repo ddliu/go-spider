@@ -1,8 +1,22 @@
 package spider
 
+type Pipe func (*Spider, *Task) {
+
+}
+
+
+
 type Pipe interface {
     Run(*Task)
 }
+
+type FuncPipe struct {
+
+}
+
+func (this *FuncPipe) Run()
+
+func FuncPipe()
 
 func IfPipe() Pipe {
 
