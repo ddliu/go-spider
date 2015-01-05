@@ -1,7 +1,7 @@
-package pipe
+package pipes
 
 import (
-    "github.com/ddliu/spider"
+    "github.com/ddliu/go-spider"
 )
 
 

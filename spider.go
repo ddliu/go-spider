@@ -5,10 +5,10 @@ import (
 )
 
 type Spider struct {
-    Concurrency int,
-    pipes []Pipe,
-    tasks []*Task,
-    m sync.Mutex,
+    Concurrency int
+    pipes []Pipe
+    tasks []*Task
+    m sync.Mutex
 }
 
 func (this *Spider) Pipe(pipe) *Spider {
