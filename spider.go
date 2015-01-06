@@ -112,7 +112,7 @@ func (this *Spider) IsFinished() bool {
 
 // Add tasks from uri.
 func (this *Spider) AddUri(uris ...string) *Spider {
-    for uri in range uris {
+    for _, uri := range uris {
         this.AddTask(&Task{Uri: uri})
     }
 

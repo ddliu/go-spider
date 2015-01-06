@@ -32,7 +32,7 @@ func (this *Task) Fail(reason interface{}) {
 }
 
 func (this *Task) Ignore(reason interface{}) {
-
+    this.Spider.IgnoreTask(this, reason)
 }
 
 func (this *Task) Done() {

@@ -8,24 +8,26 @@ import (
     "github.com/ddliu/go-spider"
 )
 
-func Unique() {
+func Unique() spider.Pipe {
     m := make(map[string]interface{})
     var l sync.Mutex
-    return func(s *spider.Spider, t *spider.Task) {
-        if check() {
-            t.Ignore("Duplicated task")
-        }
-    }
-
-    var check = func(uri string) bool {
+    
+    var insert = func(uri string) bool {
         l.Lock()
         defer l.Unlock()
         if _, ok := m[uri]; !ok {
             m[uri] = nil
 
-            return false
-        } else {
             return true
+        } else {
+            return false
         }
     }
+    
+    return func(s *spider.Spider, t *spider.Task) {
+        if !insert(t.Uri) {
+            t.Ignore("Duplicated task")
+        }
+    }
+
 }
