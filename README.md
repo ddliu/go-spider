@@ -1,4 +1,4 @@
-# go-spider
+# go-spider [![Build Status](https://travis-ci.org/ddliu/go-spider.png)](https://travis-ci.org/ddliu/go-spider)
 
 A flexible spider as well as a general perposed task runner.
 
