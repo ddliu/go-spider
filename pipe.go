@@ -17,7 +17,13 @@ func Parallel(pipes ...Pipe) Pipe {
 func Series(pipes ...Pipe) Pipe {
     return func(s *Spider, t *Task) {
         for i := 0; i < len(pipes); i++ {
-            pipes[i](s, t)    
+
+            // only process working tasks
+            if t.Status != WORKING {
+                break
+            }
+
+            pipes[i](s, t)
         }
     }
 }
