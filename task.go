@@ -54,3 +54,9 @@ func (this *Task) Fork(uri string, data Data) {
 
     this.Spider.AddTask(task)
 }
+
+func (this *Task) ForkUri(uris ...string) {
+    for _, uri := range uris {
+        this.Fork(uri, nil)
+    }
+}
