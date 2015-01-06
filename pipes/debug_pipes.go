@@ -7,8 +7,6 @@ import (
     "github.com/ddliu/go-spider"
 )
 
-func IfUri(pattern string, p spider.Pipe) spider.Pipe {
-    return func(s *spider.Spider, t *spider.Task) {
-        
-    }
+func Print(s *spider.Spider, t *spider.Task) {
+    println(t.Uri)
 }

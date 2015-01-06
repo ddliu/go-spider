@@ -1,8 +1,5 @@
 // Copyright 2015 Liu Dong <ddliuhb@gmail.com>.
 // Licensed under the MIT license.
 
-package pipes
+package spider
 
-// import (
-//     "github.com/ddliu/go-spider"
-// )

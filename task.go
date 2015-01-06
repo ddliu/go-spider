@@ -1,10 +1,9 @@
+// Copyright 2015 Liu Dong <ddliuhb@gmail.com>.
+// Licensed under the MIT license.
+
 package spider
 
 type Status int
-
-import (
-    "github.com/golang/glog"
-)
 
 const (
     PENDING Status = iota
@@ -14,28 +13,44 @@ const (
     DONE
 )
 
+type Data map[string]interface{}
+
 type Task struct {
     Uri string
     Status Status
-    Data map [string]interface{}
+    Data Data
+    Spider *Spider
+    Parent *Task
 }
 
-func (this *Task) Fail(reason string) {
-    this.Status = FAILED
-    glog.Warning("Task failed: ", this.Uri, "\t", reason)
+func (this *Task) IsEnded() bool {
+    return this.Status == FAILED || this.Status == IGNORED || this.Status == DONE
 }
 
-func (this *Task) Ignore(reason string) {
-    this.Status = IGNORED
-    glog.Info("Task ignored: ", this.Uri, "\t", reason)
+func (this *Task) Fail(reason interface{}) {
+    this.Spider.FailTask(this, reason)
+}
+
+func (this *Task) Ignore(reason interface{}) {
+
 }
 
 func (this *Task) Done() {
-    this.Status = DONE
-    glog.Info("Task done: ", this.Uri)
+    this.Spider.DoneTask(this)
 }
 
 func (this *Task) Start() {
-    this.Status = WORKING
-    glog.Info("Task started: ", this.Uri)
+    this.Spider.StartTask(this)
+}
+
+// Create a new task from it
+func (this *Task) Fork(uri string, data Data) {
+    task := &Task {
+        Uri: uri,
+        Status: PENDING,
+        Data: data,
+        Parent: this,
+    }
+
+    this.Spider.AddTask(task)
 }
