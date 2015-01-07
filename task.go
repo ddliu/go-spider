@@ -13,7 +13,15 @@ const (
     DONE
 )
 
-type Data map[string]interface{}
+func NewTask(uri string) *Task {
+    task := &Task {
+        Uri: uri,
+        Status: PENDING,
+        Data: make(Data),
+    }
+
+    return task
+}
 
 type Task struct {
     Uri string
@@ -45,12 +53,12 @@ func (this *Task) Start() {
 
 // Create a new task from it
 func (this *Task) Fork(uri string, data Data) {
-    task := &Task {
-        Uri: uri,
-        Status: PENDING,
-        Data: data,
-        Parent: this,
+    task := NewTask(uri)
+
+    if data != nil {
+        task.Data = data
     }
+    task.Parent = this
 
     this.Spider.AddTask(task)
 }

@@ -7,10 +7,10 @@ import (
     "time"
     // "fmt"
     "sync"
-    "github.com/golang/glog"
+    log "github.com/Sirupsen/logrus"
 )
 
-const defaultConcurrency = 1
+const defaultConcurrency = 3
 
 // Create a spider.
 func NewSpider() *Spider {
@@ -25,7 +25,7 @@ type Spider struct {
     Concurrency int
     pipes []Pipe
     tasks []*Task
-    stats map[Status]uint64
+    Stats map[Status]uint64
     m sync.Mutex
 }
 
@@ -38,18 +38,18 @@ func (this *Spider) Pipe(pipe Pipe) *Spider {
 
 // Initialize the spider objects.
 func (this *Spider) prepare() {
-    this.stats = make(map[Status]uint64)
-    this.stats[PENDING] = 0
-    this.stats[WORKING] = 0
-    this.stats[FAILED] = 0
-    this.stats[IGNORED] = 0
-    this.stats[DONE] = 0
+    this.Stats = make(map[Status]uint64)
+    this.Stats[PENDING] = 0
+    this.Stats[WORKING] = 0
+    this.Stats[FAILED] = 0
+    this.Stats[IGNORED] = 0
+    this.Stats[DONE] = 0
 }
 
 // Run spider.
 // Loop through the task list and run each of them with the help of a buffered channel.
 func (this *Spider) Run() {
-    glog.Info("Spider started")
+    log.Info("Spider started")
 
     if this.Concurrency <= 0 {
         this.Concurrency = defaultConcurrency
@@ -82,7 +82,7 @@ func (this *Spider) Run() {
         }
     }
 
-    glog.Info("Spider finished")
+    log.Info("Spider finished")
 }
 
 // Run a single task (should never panic)
@@ -107,13 +107,13 @@ func (this *Spider) do(task *Task) {
 // Check if all tasks have been processed.
 // TODO: current implement is not safe!
 func (this *Spider) IsFinished() bool {
-    return this.stats[PENDING] == 0 && this.stats[WORKING] == 0
+    return this.Stats[PENDING] == 0 && this.Stats[WORKING] == 0
 }
 
 // Add tasks from uri.
 func (this *Spider) AddUri(uris ...string) *Spider {
     for _, uri := range uris {
-        this.AddTask(&Task{Uri: uri})
+        this.AddTask(NewTask(uri))
     }
 
     return this
@@ -126,7 +126,7 @@ func (this *Spider) AddTask(task *Task) *Spider {
     this.tasks = append(this.tasks, task)
     this.m.Unlock()
 
-    this.stats[PENDING]++
+    this.Stats[PENDING]++
 
     return this
 }
@@ -134,31 +134,31 @@ func (this *Spider) AddTask(task *Task) *Spider {
 // Mark a task as failed.
 func (this *Spider) FailTask(task *Task, reason interface{}) {
     task.Status = FAILED
-    this.stats[FAILED]++
-    this.stats[WORKING]--
-    glog.Warning("Task failed: ", task.Uri, "\t", reason)
+    this.Stats[FAILED]++
+    this.Stats[WORKING]--
+    log.Warning("Task failed: ", task.Uri, "\t", reason)
 }
 
 // Mark a task as done.
 func (this *Spider) DoneTask(task *Task) {
     task.Status = DONE
-    this.stats[DONE]++
-    this.stats[WORKING]--
-    glog.Info("Task done: ", task.Uri)
+    this.Stats[DONE]++
+    this.Stats[WORKING]--
+    log.Debug("Task done: ", task.Uri)
 }
 
 // Mark a task as ignored.
 func (this *Spider) IgnoreTask(task *Task, reason interface{}) {
     task.Status = IGNORED
-    this.stats[IGNORED]++
-    this.stats[WORKING]--
-    glog.Info("Task ignored: ", task.Uri, "\t", reason)
+    this.Stats[IGNORED]++
+    this.Stats[WORKING]--
+    log.Debug("Task ignored: ", task.Uri, "\t", reason)
 }
 
 // Mark a task as started.
 func (this *Spider) StartTask(task *Task) {
     task.Status = WORKING
-    this.stats[WORKING]++
-    this.stats[PENDING]--
-    glog.Info("Task started: ", task.Uri)
+    this.Stats[WORKING]++
+    this.Stats[PENDING]--
+    log.Debug("Task started: ", task.Uri)
 }
