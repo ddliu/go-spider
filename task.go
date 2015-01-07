@@ -26,6 +26,7 @@ func NewTask(uri string) *Task {
 type Task struct {
     Uri string
     Status Status
+    Depth uint
     Data Data
     Spider *Spider
     Parent *Task
@@ -59,6 +60,7 @@ func (this *Task) Fork(uri string, data Data) {
         task.Data = data
     }
     task.Parent = this
+    task.Depth = this.Depth + 1
 
     this.Spider.AddTask(task)
 }
