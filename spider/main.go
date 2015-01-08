@@ -39,6 +39,16 @@ func main() {
             Value: 1,
             Usage: "spider concurrency",
         },
+        cli.IntFlag {
+            Name: "max, m",
+            Value: 0,
+            Usage: "maximum urls to follow",
+        },
+        cli.IntFlag {
+            Name: "depth, i",
+            Value: 0,
+            Usage: "maximum depth to follow",
+        }
     }
 
     app.Action = func(c *cli.Context) {
@@ -51,7 +61,9 @@ func main() {
             Pipe(pipes.IfUrl(c.String("follow"), nil, pipes.Ignore))
 
 
-        c.Args()
+        for u in range c.Args() {
+            
+        }
     }
 
     app.Run(os.Args)
