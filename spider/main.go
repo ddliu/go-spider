@@ -36,7 +36,7 @@ func main() {
         },
         cli.IntFlag {
             Name: "concurrency, c",
-            Value: 1,
+            Value: 5,
             Usage: "spider concurrency",
         },
         cli.IntFlag {
@@ -57,13 +57,16 @@ func main() {
             Pipe(pipes.NormalizeUrl).
             Pipe(pipes.IfUrl(c.String("download"), pipes.Download(func(uri string) string {
                 return downloadPath + "/" + Path(uri)
-            }, 0777), nil))
-            Pipe(pipes.IfUrl(c.String("follow"), nil, pipes.Ignore))
-
+            }, 0777), nil)).
+            Pipe(pipes.IfUrl(c.String("follow"), nil, pipes.Ignore)).
+            Pipe(pipes.Request).
+            Pipe(pipes.FollowLinks)
 
         for u in range c.Args() {
-            
+            s.AddUri(u)
         }
+
+        s.Run()
     }
 
     app.Run(os.Args)
