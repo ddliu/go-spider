@@ -58,11 +58,11 @@ func main() {
         s := spider.NewSpider().
             Pipe(pipes.NormalizeUrl).
             Pipe(pipes.Unique()).
+            Pipe(pipes.IfUri(c.String("follow"), nil, pipes.Ignore)).
             Pipe(pipes.IfUri(c.String("download"), pipes.Download(func(uri string) string {
                 uri = strings.Replace(uri, "/", "-", -1)
                 return downloadPath + "/" + Path(uri)
             }, 0777), nil)).
-            Pipe(pipes.IfUri(c.String("follow"), nil, pipes.Ignore)).
             Pipe(pipes.Request).
             Pipe(pipes.FollowLinks)
 
