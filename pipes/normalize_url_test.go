@@ -14,6 +14,7 @@ func TestNormalizeUrl(t *testing.T) {
                     "a.html",
                     "http://drive.google.com/",
                     "../b.html",
+                    "/c/d.html",
                 )
             }
         })
@@ -23,5 +24,6 @@ func TestNormalizeUrl(t *testing.T) {
         "http://www.google.com/main/a.html",
         "http://drive.google.com/",
         "http://www.google.com/b.html",
+        "http://www.google.com/c/d.html",
     }, "")
 }
