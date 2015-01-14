@@ -51,5 +51,5 @@ func NormalizeUrl(s *spider.Spider, t *spider.Task) {
 }
 
 func init() {
-    absRegex = regexp.MustCompile(`^[a-z0-9]+://`)
+    absRegex = regexp.MustCompile(`^[a-z0-9]+:`)
 }

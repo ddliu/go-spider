@@ -15,6 +15,7 @@ func TestNormalizeUrl(t *testing.T) {
                     "http://drive.google.com/",
                     "../b.html",
                     "/c/d.html",
+                    "mailto:test@test.com",
                 )
             }
         })
