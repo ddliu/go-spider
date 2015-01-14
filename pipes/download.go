@@ -10,26 +10,32 @@ import (
 
 func Download(mapper func(string) string, perm os.FileMode) spider.Pipe {
     return func(s *spider.Spider, t *spider.Task) {
-        httpclient.Begin()
+        var content []byte
 
-        // auto referer
-        if t.Parent != nil {
-            httpclient.WithHeader("Referer", t.Parent.Uri)
-        }
+        if t.Data.Has("content") {
+            content = t.Data.MustGetBytes("content")
+        } else {
+            httpclient.Begin()
 
-        res, err := httpclient.Get(t.Uri, nil)
+            // auto referer
+            if t.Parent != nil {
+                httpclient.WithHeader("Referer", t.Parent.Uri)
+            }
 
-        if err != nil {
-            panic(err)
-        }
+            res, err := httpclient.Get(t.Uri, nil)
 
-        if res.StatusCode != 200 {
-            panic(fmt.Sprintf("GET %s with status code %d", t.Uri, res.StatusCode))
-        }
+            if err != nil {
+                panic(err)
+            }
 
-        content, err := res.ReadAll()
-        if err != nil {
-            panic(err)
+            if res.StatusCode != 200 {
+                panic(fmt.Sprintf("GET %s with status code %d", t.Uri, res.StatusCode))
+            }
+
+            content, err = res.ReadAll()
+            if err != nil {
+                panic(err)
+            }
         }
         
         if err := ioutil.WriteFile(mapper(t.Uri), content, perm); err != nil {

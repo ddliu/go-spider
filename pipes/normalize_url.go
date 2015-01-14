@@ -2,8 +2,6 @@ package pipes
 
 import (
     "regexp"
-    "strings"
-    pkgurl "net/url"
     "github.com/ddliu/go-spider"
     "github.com/PuerkitoBio/purell"
 )
@@ -15,22 +13,9 @@ const flags = purell.FlagsSafe | purell.FlagRemoveDotSegments |
               purell.FlagRemoveEmptyPortSeparator
 
 func DoNormalizeUrl(url, base string) (string, error) {
-    if base == "" {
-        return purell.NormalizeURLString(url, flags)
-    }
-
-    baseUrl, err := pkgurl.Parse(base)
+    url, err := joinUrl(base, url)
     if err != nil {
         return "", err
-    }
-
-    // TODO: not strict
-    if strings.HasPrefix(url, "//") {
-        url = baseUrl.Scheme + ":" + url
-    } else if strings.HasPrefix(url, "/") {
-        url = baseUrl.Scheme + "://" + baseUrl.Host + url
-    } else if !absRegex.MatchString(url) {
-        url = base + url
     }
 
     return purell.NormalizeURLString(url, flags)

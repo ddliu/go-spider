@@ -18,6 +18,14 @@ func TestNormalizeUrl(t *testing.T) {
                     "mailto:test@test.com",
                 )
             }
+
+            if t.Uri == "http://www.google.com/main/a.html" {
+                t.ForkUri(
+                    "h.html",
+                    "../i.html",
+                    "/j/k.html",
+                )
+            }
         })
 
     shouldProduceUriList(t, s, []string{"http://www.google.com/main/"}, []string {
@@ -26,5 +34,10 @@ func TestNormalizeUrl(t *testing.T) {
         "http://drive.google.com/",
         "http://www.google.com/b.html",
         "http://www.google.com/c/d.html",
+        "mailto:test@test.com",
+
+        "http://www.google.com/main/h.html",
+        "http://www.google.com/i.html",
+        "http://www.google.com/j/k.html",
     }, "")
 }

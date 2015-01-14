@@ -24,6 +24,11 @@ func Request(s *spider.Spider, t *spider.Task) {
         panic(fmt.Sprintf("GET %s with status code %d", t.Uri, res.StatusCode))
     }
 
+    // check for redirects
+    if res.Request.URL.String() != t.Uri {
+        t.Uri = res.Request.URL.String()
+    }
+
     t.Data["content"], err = res.ReadAll()
     if err != nil {
         panic(err)
