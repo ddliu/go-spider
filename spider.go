@@ -12,6 +12,13 @@ import (
 
 const defaultConcurrency = 3
 
+const (
+    ON_START = iota
+    ON_STOP = iota
+)
+
+type Listener func(*Spider, *Task)
+
 // Create a spider.
 func NewSpider() *Spider {
     spider := &Spider {
@@ -25,6 +32,7 @@ type Spider struct {
     Concurrency int
     pipes []Pipe
     tasks []*Task
+    events map[int][]Listener
     Stats map[Status]uint64
     m sync.Mutex
 }
@@ -38,6 +46,7 @@ func (this *Spider) Pipe(pipe Pipe) *Spider {
 
 // Initialize the spider objects.
 func (this *Spider) prepare() {
+    this.events = make(map[int][]Listener)
     this.Stats = make(map[Status]uint64)
     this.Stats[PENDING] = 0
     this.Stats[WORKING] = 0
@@ -161,4 +170,20 @@ func (this *Spider) StartTask(task *Task) {
     this.Stats[WORKING]++
     this.Stats[PENDING]--
     log.Debug("Task started: ", task.Uri)
+}
+
+// Register events
+func (this *Spider) On(e int, f Listener) *Spider {
+    this.events[e] = append(this.events[e], f)
+
+    return this
+}
+
+// Trigger an event
+func (this *Spider) Trigger(e int, t *Task) {
+    if events, ok := this.events[e]; ok {
+        for _, e := range events {
+            e(this, t)
+        }
+    }
 }
