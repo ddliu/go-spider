@@ -14,6 +14,10 @@ import (
     tm "github.com/buger/goterm"
 )
 
+const (
+    VERSION = "0.1.0"
+)
+
 type FormatedInfo struct {
     DisplayStatus string
     DisplayTime string
@@ -49,9 +53,11 @@ func formateInfo(info spider.SpiderInfo) FormatedInfo {
     }
 
     displayMemory := humanize.Bytes(info.MemoryUsage)
+    displayTime := (time.Duration(time.Since(info.StartTime).Seconds()) * time.Second).String()
 
     return FormatedInfo {
         DisplayStatus: status,
+        DisplayTime: displayTime,
         DisplayMemory: displayMemory,
         Pending: pending,
         Working: working,
@@ -66,6 +72,9 @@ func main() {
     app := cli.NewApp()
     app.Name = "spidergo"
     app.Usage = "Spider client"
+    app.Version = VERSION
+    app.Author = "Liu Dong"
+    app.Email = "ddliuhb@gmail.com"
 
     app.Flags = []cli.Flag {
         cli.StringFlag{
@@ -179,9 +188,44 @@ func doWatch(c *cli.Context) {
             // will be overwritten each time, instead of adding new.
             tm.MoveCursor(1,1)
 
-            // title
-            tm.Println(tm.Background(tm.Color(tm.Bold("go-spider client v0.1.0 [" + formatedInfo.DisplayStatus + "]"), tm.RED), tm.WHITE))
-            tm.Println(fmt.Sprintf("Progress:%d/%d", formatedInfo.Total - formatedInfo.Pending - formatedInfo.Working, formatedInfo.Total))
+            tm.Println("Status:", formatedInfo.DisplayStatus, ", time:", formatedInfo.DisplayTime, "memory:", formatedInfo.DisplayMemory)
+
+            if formatedInfo.Total > 0 {
+                width := tm.Width()
+                if width < 10 {
+                    width = 10
+                }
+
+                if width > 80 {
+                    width = 80
+                }
+
+                finished := formatedInfo.Done + formatedInfo.Failed + formatedInfo.Ignored
+                var finishedProgressNumber int
+                if finished > 0 {
+                    finishedProgressNumber = int(uint64(width) * finished / formatedInfo.Total)
+                }
+
+                progressString := ""
+                for i := 0; i < width; i++ {
+                    if i < finishedProgressNumber {
+                        progressString += ">"
+                    } else {
+                        progressString += "."
+                    }
+                }
+
+                tm.Println(progressString)
+            }
+
+            tm.Print(fmt.Sprintf("Total: %d, pending: %d, working: %d\nDone: %d, failed: %d, ignored: %d\n", 
+                formatedInfo.Total,
+                formatedInfo.Pending,
+                formatedInfo.Working,
+                formatedInfo.Done,
+                formatedInfo.Failed,
+                formatedInfo.Ignored,
+            ))
 
             tm.Flush() // Call it every time at the end of rendering
         }

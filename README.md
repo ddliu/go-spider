@@ -2,6 +2,10 @@
 
 A flexible spider as well as a general perposed task runner.
 
+## Go Package Dependencies
+
+See deps.sh
+
 ## Usage
 
 ### Workflow
@@ -53,6 +57,15 @@ go run client/client.go add uri1 uri2 uri3
 go run client/client.go pause
 go run client/client.go resume
 go run client/client.go watch
+```
+
+### A Watch Example
+
+```
+Status: Running , time: 15s memory: 264KB
+>>>>>>>>........................................................................
+Total: 100, pending: 86, working: 3
+Done: 7, failed: 4, ignored: 0
 ```
 
 ## Examples
