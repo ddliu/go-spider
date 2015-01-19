@@ -1,22 +1,222 @@
+// Copyright 2015 Liu Dong <ddliuhb@gmail.com>.
+// Licensed under the MIT license.
+
 package main
 
 import (
-    "github.com/ddliu/go-spider"
+    "fmt"
     "time"
+    "log"
+    "os"
+    "github.com/ddliu/go-spider"
+    "github.com/codegangsta/cli"
+    "github.com/dustin/go-humanize"
+    tm "github.com/buger/goterm"
 )
 
-func main() {
-    go TestServer()
+type FormatedInfo struct {
+    DisplayStatus string
+    DisplayTime string
+    DisplayMemory string
 
-    time.Sleep(1 * time.Second)
-
-    client, err := spider.NewRPCClient(":1234", 10 * time.Second)
-    if err != nil {
-        panic(err)
-    }
-    client.Echo("...")
+    Pending uint64
+    Working uint64
+    Failed uint64
+    Ignored uint64
+    Done uint64
+    Total uint64
 }
 
-func TestServer() {
-    spider.StartRPCServer(nil, ":1234")
+func formateInfo(info spider.SpiderInfo) FormatedInfo {
+
+    pending, _ := info.Stats[spider.PENDING]
+    working, _ := info.Stats[spider.WORKING]
+    failed, _ := info.Stats[spider.FAILED]
+    ignored, _ := info.Stats[spider.IGNORED]
+    done, _ := info.Stats[spider.DONE]
+    total := pending + working + failed + ignored + done
+    
+    var status string
+
+    if info.IsStopped {
+        status = "Stopped"
+    } else if info.IsPaused {
+        status = "Paused"
+    } else if pending == 0 && working == 0 {
+        status = "Finished"
+    } else {
+        status = "Running"
+    }
+
+    displayMemory := humanize.Bytes(info.MemoryUsage)
+
+    return FormatedInfo {
+        DisplayStatus: status,
+        DisplayMemory: displayMemory,
+        Pending: pending,
+        Working: working,
+        Failed: failed,
+        Ignored: ignored,
+        Done: done,
+        Total: total,
+    }
+}
+
+func main() {
+    app := cli.NewApp()
+    app.Name = "spidergo"
+    app.Usage = "Spider client"
+
+    app.Flags = []cli.Flag {
+        cli.StringFlag{
+            Name: "server, s",
+            Usage: "Server IP and port to connect(127.0.0.1:1234)",
+            EnvVar: "GO_SPIDER_SERVER",
+        },
+    }
+
+    app.Commands = []cli.Command{
+        {
+            Name: "watch",
+            Usage: "Keep watching the spider",
+            Action: doWatch,
+        },
+        {
+            Name: "info",
+            Usage: "Show spider info",
+            Action: doInfo,
+        },
+        {
+            Name: "add",
+            Usage: "Add tasks",
+            Action: doAdd,
+        },
+        {
+            Name: "pause",
+            Usage: "Pause the spider",
+            Action: doPause,
+        },
+        {
+            Name: "resume",
+            Usage: "Resume the spider",
+            Action: doResume,
+        },
+        {
+            Name: "stop",
+            Usage: "Stop the spider",
+            Action: doStop,
+        },
+        {
+            Name: "ping",
+            Usage: "Ping the RPC service",
+            Action: doPing,
+        },
+    }
+
+    app.Run(os.Args)
+}
+
+func getClient(c *cli.Context) *spider.RPCClient {
+    s := c.GlobalString("server")
+    if s == "" {
+        log.Fatal("--server not specified")
+    }
+
+    client, err := spider.NewRPCClient(s, 10 * time.Second)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    return client
+}
+
+func doInfo(c *cli.Context) {
+    client := getClient(c)
+    info, err := client.Info()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    formatedInfo := formateInfo(info)
+
+    println("Start Time:", humanize.Time(info.StartTime))
+    println("Status:", formatedInfo.DisplayStatus)
+    println("Memory:", formatedInfo.DisplayMemory)
+    println("Total:", formatedInfo.Total)
+    println("Done:", formatedInfo.Done)
+    println("Pending:", formatedInfo.Pending)
+    println("Working:", formatedInfo.Working)
+    println("Failed:", formatedInfo.Failed)
+    println("ignored:", formatedInfo.Ignored)
+}
+
+func doAdd(c *cli.Context) {
+    tasks := c.Args()
+    if len(tasks) == 0 {
+        log.Fatal("No task added")
+    }
+
+    client := getClient(c)
+
+    err := client.Add(tasks...)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    println("Added", len(tasks), "tasks")
+}
+
+func doWatch(c *cli.Context) {
+    client := getClient(c)
+
+    tm.Clear()
+
+    for {
+        info, err := client.Info()
+        if err == nil {
+            formatedInfo := formateInfo(info)
+            // By moving cursor to top-left position we ensure that console output
+            // will be overwritten each time, instead of adding new.
+            tm.MoveCursor(1,1)
+
+            // title
+            tm.Println(tm.Background(tm.Color(tm.Bold("go-spider client v0.1.0 [" + formatedInfo.DisplayStatus + "]"), tm.RED), tm.WHITE))
+            tm.Println(fmt.Sprintf("Progress:%d/%d", formatedInfo.Total - formatedInfo.Pending - formatedInfo.Working, formatedInfo.Total))
+
+            tm.Flush() // Call it every time at the end of rendering
+        }
+        time.Sleep(time.Second)
+    }
+}
+
+func doPause(c *cli.Context) {
+    client := getClient(c)
+    err := client.Pause()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    println("Paused")
+}
+
+func doResume(c *cli.Context) {
+    client := getClient(c)
+    err := client.Resume()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    println("Resumed")
+}
+
+func doStop(c *cli.Context) {
+    println("stop")
+}
+
+func doPing(c *cli.Context) {
+    client := getClient(c)
+    err := client.Ping()
+    if err != nil {
+        log.Fatal(err)
+    }
 }
