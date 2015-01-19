@@ -4,21 +4,55 @@ A flexible spider as well as a general perposed task runner.
 
 ## Usage
 
+### Workflow
+
 ```go
+package main
+
 import (
+    // Import the main package
     "github.com/ddliu/go-spider"
+
+    // Import a lot of useful pipes
     "github.com/ddliu/go-spider/pipes"
 )
 
 func main() {
+    // Create a spider
     s := spider.NewSpider()
+
+    // Config it
     s.Concurrency = 3
 
+    // Combine pipes together
     s.
         Pipe(pipes.PipeA).
-        Pipe(pipes.PipeB).
-        Run()
+        Pipe(pipes.PipeB)
+
+    // Let's go!
+    s.Run()
 }
+```
+
+## Take Control on the Fly
+
+Start the server:
+
+```
+s := spier.NewSpider()
+// setup
+s.RunAndServe("127.0.0.1:1234")
+```
+
+Control it with the client:
+
+```
+export GO_SPIDER_SERVER=127.0.0.1:1234
+go run client/client.go info
+go run client/client.go add uri1 uri2 uri3
+go run client/client.go pause
+go run client/client.go resume
+go run client/client.go watch
 ```
 
 ## Examples
