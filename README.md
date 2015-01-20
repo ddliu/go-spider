@@ -4,7 +4,7 @@ A flexible spider as well as a general perposed task runner.
 
 ## Go Package Dependencies
 
-See deps.sh
+See Godeps/Godeps.json
 
 ## Usage
 

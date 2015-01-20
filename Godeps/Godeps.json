@@ -1,0 +1,36 @@
+{
+	"ImportPath": "github.com/ddliu/go-spider",
+	"GoVersion": "go1.2.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/PuerkitoBio/purell",
+			"Comment": "v0.1.0-10-g1909519",
+			"Rev": "1909519b19f44750062c3e8209d65c0921f18060"
+		},
+		{
+			"ImportPath": "github.com/buger/goterm",
+			"Rev": "af3f07dadc88b80c7b5a15f26033c6dd979f012f"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.2.0-50-ga14c5b4",
+			"Rev": "a14c5b47c7efa4ff80cc42e1079a34b4756f2311"
+		},
+		{
+			"ImportPath": "github.com/ddliu/go-httpclient",
+			"Comment": "v0.5.0",
+			"Rev": "004f28ad1995fe25042aea1161d65e7a6b33621a"
+		},
+		{
+			"ImportPath": "github.com/ddliu/go-requery",
+			"Rev": "18cde682b500e37fd054d7736d21b86dcc4d5d3a"
+		},
+		{
+			"ImportPath": "github.com/dustin/go-humanize",
+			"Rev": "145fabdb1ab757076a70a886d092a3af27f66f4c"
+		}
+	]
+}
