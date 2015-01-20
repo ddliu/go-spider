@@ -139,6 +139,24 @@ func getClient(c *cli.Context) *spider.RPCClient {
     return client
 }
 
+func loopGetClient(c *cli.Context) *spider.RPCClient {
+    s := c.GlobalString("server")
+    if s == "" {
+        log.Fatal("--server not specified")
+    }
+
+    for {
+        client, err := spider.NewRPCClient(s, 10 * time.Second)
+        if err == nil {
+            return client
+        }
+
+        time.Sleep(3 * time.Second)
+    }
+
+    return nil
+}
+
 func doInfo(c *cli.Context) {
     client := getClient(c)
     info, err := client.Info()
@@ -188,7 +206,7 @@ func doWatch(c *cli.Context) {
             // will be overwritten each time, instead of adding new.
             tm.MoveCursor(1,1)
 
-            tm.Println("Status:", formatedInfo.DisplayStatus, ", time:", formatedInfo.DisplayTime, "memory:", formatedInfo.DisplayMemory)
+            tm.Println("Status:", formatedInfo.DisplayStatus, ", time:", formatedInfo.DisplayTime, "memory:", formatedInfo.DisplayMemory, "     ")
 
             if formatedInfo.Total > 0 {
                 width := tm.Width()
@@ -218,7 +236,7 @@ func doWatch(c *cli.Context) {
                 tm.Println(progressString)
             }
 
-            tm.Print(fmt.Sprintf("Total: %d, pending: %d, working: %d\nDone: %d, failed: %d, ignored: %d\n", 
+            tm.Print(fmt.Sprintf("Total: %d, pending: %d, working: %d     \nDone: %d, failed: %d, ignored: %d     \n", 
                 formatedInfo.Total,
                 formatedInfo.Pending,
                 formatedInfo.Working,
@@ -228,6 +246,8 @@ func doWatch(c *cli.Context) {
             ))
 
             tm.Flush() // Call it every time at the end of rendering
+        } else {
+            client = loopGetClient(c)
         }
         time.Sleep(time.Second)
     }
