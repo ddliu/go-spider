@@ -7,7 +7,7 @@ import (
     "time"
     // "fmt"
     "sync"
-    log "github.com/Sirupsen/logrus"
+    "log"
 )
 
 const defaultConcurrency = 3
@@ -36,6 +36,7 @@ type Spider struct {
     Stats map[Status]uint64
     IsPaused bool
     IsStopped bool
+    IsDebug bool
     m sync.Mutex
     statsLock sync.Mutex
 }
@@ -64,7 +65,7 @@ func (this *Spider) prepare() {
 func (this *Spider) RunForever(quit chan bool) {
     this.IsStopped = false
     this.IsPaused = false
-    log.Info("Spider started")
+    log.Println("[INFO] Spider started")
 
     if this.Concurrency <= 0 {
         this.Concurrency = defaultConcurrency
@@ -119,7 +120,7 @@ func (this *Spider) Run() {
         // if all tasks are finished, we can go out of the loop
         if this.IsFinished() {
             quit <- true
-            log.Info("Spider finished")
+            log.Println("[INFO] Spider finished")
             break
         } else {
             time.Sleep(10 * time.Millisecond)
@@ -203,7 +204,7 @@ func (this *Spider) FailTask(task *Task, reason interface{}) {
     this.Stats[WORKING]--
     this.statsLock.Unlock()
 
-    log.Warning("Task failed: ", task.Uri, "\t", reason)
+    log.Println("[WARN] Task failed: ", task.Uri, "\t", reason)
 }
 
 // Mark a task as done.
@@ -214,7 +215,9 @@ func (this *Spider) DoneTask(task *Task) {
     this.Stats[WORKING]--
     this.statsLock.Unlock()
 
-    log.Debug("Task done: ", task.Uri)
+    if this.IsDebug {
+        log.Println("[DEBUG] Task done: ", task.Uri)
+    }
 }
 
 // Mark a task as ignored.
@@ -226,7 +229,9 @@ func (this *Spider) IgnoreTask(task *Task, reason interface{}) {
     this.Stats[WORKING]--
     this.statsLock.Unlock()
 
-    log.Debug("Task ignored: ", task.Uri, "\t", reason)
+    if this.IsDebug {
+        log.Println("[DEBUG] Task ignored: ", task.Uri, "\t", reason)
+    }
 }
 
 // Mark a task as started.
@@ -238,7 +243,9 @@ func (this *Spider) StartTask(task *Task) {
     this.Stats[PENDING]--
     this.statsLock.Unlock()
 
-    log.Debug("Task started: ", task.Uri)
+    if this.IsDebug {
+        log.Println("[DEBUG] Task started: ", task.Uri)
+    }
 }
 
 // Register events
