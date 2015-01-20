@@ -37,6 +37,7 @@ type Spider struct {
     IsPaused bool
     IsStopped bool
     m sync.Mutex
+    statsLock sync.Mutex
 }
 
 // Chain a pipe.
@@ -166,7 +167,6 @@ func (this *Spider) Stop() {
 }
 
 // Check if all tasks have been processed.
-// TODO: current implement is not safe!
 func (this *Spider) IsFinished() bool {
     return this.Stats[PENDING] == 0 && this.Stats[WORKING] == 0
 }
@@ -187,7 +187,9 @@ func (this *Spider) AddTask(task *Task) *Spider {
     this.tasks = append(this.tasks, task)
     this.m.Unlock()
 
+    this.statsLock.Lock()
     this.Stats[PENDING]++
+    this.statsLock.Unlock()
 
     return this
 }
@@ -195,32 +197,47 @@ func (this *Spider) AddTask(task *Task) *Spider {
 // Mark a task as failed.
 func (this *Spider) FailTask(task *Task, reason interface{}) {
     task.Status = FAILED
+
+    this.statsLock.Lock()
     this.Stats[FAILED]++
     this.Stats[WORKING]--
+    this.statsLock.Unlock()
+
     log.Warning("Task failed: ", task.Uri, "\t", reason)
 }
 
 // Mark a task as done.
 func (this *Spider) DoneTask(task *Task) {
     task.Status = DONE
+    this.statsLock.Lock()
     this.Stats[DONE]++
     this.Stats[WORKING]--
+    this.statsLock.Unlock()
+
     log.Debug("Task done: ", task.Uri)
 }
 
 // Mark a task as ignored.
 func (this *Spider) IgnoreTask(task *Task, reason interface{}) {
     task.Status = IGNORED
+
+    this.statsLock.Lock()
     this.Stats[IGNORED]++
     this.Stats[WORKING]--
+    this.statsLock.Unlock()
+
     log.Debug("Task ignored: ", task.Uri, "\t", reason)
 }
 
 // Mark a task as started.
 func (this *Spider) StartTask(task *Task) {
     task.Status = WORKING
+
+    this.statsLock.Lock()
     this.Stats[WORKING]++
     this.Stats[PENDING]--
+    this.statsLock.Unlock()
+
     log.Debug("Task started: ", task.Uri)
 }
 
