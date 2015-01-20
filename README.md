@@ -38,30 +38,67 @@ func main() {
 }
 ```
 
-## Take Control on the Fly
+## RPC Server
 
-Start the server:
+There is a builtin RPC server which makes it easy to integrite with other systems.
 
 ```
 s := spier.NewSpider()
+
 // setup
+// ...
+
 s.RunAndServe("127.0.0.1:1234")
 ```
 
-Control it with the client:
+## Client
+
+After starting the spider and the RPC server, you can take control easily with the cli client.
+
+### Install
 
 ```
-export GO_SPIDER_SERVER=127.0.0.1:1234
-go run client/client.go info
-go run client/client.go add uri1 uri2 uri3
-go run client/client.go pause
-go run client/client.go resume
-go run client/client.go watch
+go get github.com/ddliu/go-spider/gospider
 ```
 
-### A Watch Example
+### Usage
 
 ```
+$ gospider
+
+NAME:
+   gospider - The go-spider client (https://github.com/ddliu/go-spider)
+
+USAGE:
+   gospider [global options] command [command options] [arguments...]
+
+VERSION:
+   0.1.0
+
+AUTHOR:
+  Liu Dong - <ddliuhb@gmail.com>
+
+COMMANDS:
+   watch    Keep watching the spider
+   info     Show spider info
+   add      Add tasks
+   pause    Pause the spider
+   resume   Resume the spider
+   stop     Stop the spider
+   ping     Ping the RPC service
+   help, h  Shows a list of commands or help for one command
+   
+GLOBAL OPTIONS:
+   --server, -s     Server IP and port to connect(127.0.0.1:1234) [$GO_SPIDER_SERVER]
+   --help, -h       show help
+   --version, -v    print the version
+```
+
+### The Watch Example
+
+```
+$ export GO_SPIDER_SERVER=127.0.0.1:1234
+$ gospider watch
 Status: Running , time: 15s memory: 264KB
 >>>>>>>>........................................................................
 Total: 100, pending: 86, working: 3

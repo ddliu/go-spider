@@ -70,8 +70,8 @@ func formateInfo(info spider.SpiderInfo) FormatedInfo {
 
 func main() {
     app := cli.NewApp()
-    app.Name = "spidergo"
-    app.Usage = "Spider client"
+    app.Name = "gospider"
+    app.Usage = "The go-spider client (https://github.com/ddliu/go-spider)"
     app.Version = VERSION
     app.Author = "Liu Dong"
     app.Email = "ddliuhb@gmail.com"
