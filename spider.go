@@ -142,12 +142,13 @@ func (this *Spider) do(task *Task) {
         // error occured
         if r := recover(); r != nil {
             this.FailTask(task, r)
-            return
-        }
-
-        if !task.IsEnded() {
+        } else if !task.IsEnded() {
             this.DoneTask(task)
         }
+
+        // cleanup
+        task.Parent = nil
+        task.Data = nil
     }()
 
     this.StartTask(task)
