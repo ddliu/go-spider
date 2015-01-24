@@ -64,3 +64,11 @@ func (this Data) MustGetBytes(key string) ([]byte) {
 
     panic("Task has no bytes data: " + key)
 }
+
+func (this Data) MustGet(key string) interface{} {
+    if v, ok := this[key]; ok {
+        return v
+    }
+
+    panic("Task has no field: " + key)
+}
