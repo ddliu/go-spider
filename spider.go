@@ -8,6 +8,7 @@ import (
     // "fmt"
     "sync"
     "log"
+    "runtime/debug"
 )
 
 const defaultConcurrency = 3
@@ -142,6 +143,9 @@ func (this *Spider) do(task *Task) {
         // error occured
         if r := recover(); r != nil {
             this.FailTask(task, r)
+            if this.IsDebug {
+                debug.PrintStack()
+            }
         } else if !task.IsEnded() {
             this.DoneTask(task)
         }
